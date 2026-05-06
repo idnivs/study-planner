@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
 import { useTimerStore } from '../../stores/useTimerStore';
-import { useNavigation } from '@react-navigation/native';
+import { useForegroundTimer } from '../../hooks/useForegroundTimer';
 import { theme } from '../../constants/theme';
 import { formatDuration } from '../../utils/dateHelpers';
 
@@ -9,6 +9,9 @@ export function TimerBanner() {
   const current = useTimerStore((s) => s.current);
   const pause = useTimerStore((s) => s.pause);
   const resume = useTimerStore((s) => s.resume);
+  const stop = useTimerStore((s) => s.stop);
+
+  useForegroundTimer();
 
   if (!current) return null;
 
@@ -16,18 +19,40 @@ export function TimerBanner() {
     ? Math.floor((Date.now() - current.startTime) / 1000)
     : current.elapsed;
 
+  const handleStop = () => {
+    Alert.alert('停止计时', `已完成 "${current.taskTitle}"？`, [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '停止并记录',
+        onPress: async () => {
+          // Find treeId from task store
+          const { useTaskStore } = require('../../stores/useTaskStore');
+          const tasks = useTaskStore.getState().tasks;
+          const task = tasks.find((t: any) => t.id === current.taskId);
+          const treeId = task?.tree_id || '11408';
+          await stop(treeId);
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.banner}>
       <View style={styles.left}>
         <Text style={styles.title} numberOfLines={1}>{current.taskTitle}</Text>
-        <Text style={styles.time}>{formatDuration(elapsed)}</Text>
+        <Text style={[styles.time, current.running && styles.timeRunning]}>
+          {formatDuration(elapsed)}
+        </Text>
       </View>
       <View style={styles.actions}>
         <Pressable
           style={[styles.btn, current.running ? styles.pauseBtn : styles.playBtn]}
           onPress={() => current.running ? pause() : resume()}
         >
-          <Text style={styles.btnText}>{current.running ? '⏸' : '▶'}</Text>
+          <Text style={styles.btnIcon}>{current.running ? '⏸' : '▶'}</Text>
+        </Pressable>
+        <Pressable style={[styles.btn, styles.stopBtn]} onPress={handleStop}>
+          <Text style={styles.stopIcon}>⏹</Text>
         </Pressable>
       </View>
     </View>
@@ -41,16 +66,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    paddingTop: 10,
+    paddingVertical: 8,
   },
   left: {
     flex: 1,
+    marginRight: 12,
   },
   title: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '600',
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
+    fontWeight: '500',
   },
   time: {
     color: '#fff',
@@ -58,25 +83,37 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'monospace',
   },
+  timeRunning: {
+    // pulsing effect could be added later
+  },
   actions: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   btn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   playBtn: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   pauseBtn: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
-  btnText: {
+  stopBtn: {
+    backgroundColor: 'rgba(255,0,0,0.3)',
+  },
+  btnIcon: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
+  },
+  stopIcon: {
+    color: '#fff',
+    fontSize: 14,
   },
 });

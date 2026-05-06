@@ -3,8 +3,7 @@ import { Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TodayScreen } from '../screens/TodayScreen';
-import { TreeBrowserScreen } from '../screens/TreeBrowserScreen';
-import { TaskPoolScreen } from '../screens/TaskPoolScreen';
+import { KnowledgeScreen } from '../screens/KnowledgeScreen';
 import { TaskDetailScreen } from '../screens/TaskDetailScreen';
 import { KnowledgeDetailScreen } from '../screens/KnowledgeDetailScreen';
 import { KnowledgeChatScreen } from '../screens/KnowledgeChatScreen';
@@ -15,7 +14,6 @@ import { theme } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 const PlanStack = createNativeStackNavigator();
-const TreeStack = createNativeStackNavigator();
 const KnowledgeStack = createNativeStackNavigator();
 const SettingsStack = createNativeStackNavigator();
 
@@ -27,7 +25,7 @@ const screenOptions = {
   contentStyle: { backgroundColor: theme.bg },
 };
 
-function TabIcon({ emoji, label, focused }: { emoji: string; label?: string; focused: boolean }) {
+function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   return (
     <Text style={[styles.icon, focused && styles.iconFocused]}>
       {emoji}
@@ -44,19 +42,11 @@ function PlanStackScreen() {
   );
 }
 
-function TreeStackScreen() {
-  return (
-    <TreeStack.Navigator screenOptions={screenOptions}>
-      <TreeStack.Screen name="TreeBrowser" component={TreeBrowserScreen} options={{ title: '知识树' }} />
-      <TreeStack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: '任务详情' }} />
-    </TreeStack.Navigator>
-  );
-}
-
 function KnowledgeStackScreen() {
   return (
     <KnowledgeStack.Navigator screenOptions={screenOptions}>
-      <KnowledgeStack.Screen name="TaskPool" component={TaskPoolScreen} options={{ title: '任务池' }} />
+      <KnowledgeStack.Screen name="Knowledge" component={KnowledgeScreen} options={{ title: '知识' }} />
+      <KnowledgeStack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: '任务详情' }} />
       <KnowledgeStack.Screen name="KnowledgeDetail" component={KnowledgeDetailScreen} options={{ title: '知识详情' }} />
       <KnowledgeStack.Screen name="KnowledgeChat" component={KnowledgeChatScreen} options={{ title: 'AI 答疑' }} />
     </KnowledgeStack.Navigator>
@@ -99,14 +89,6 @@ export function RootNavigator() {
         options={{
           tabBarLabel: '今日计划',
           tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="TreeTab"
-        component={TreeStackScreen}
-        options={{
-          tabBarLabel: '知识树',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🌳" focused={focused} />,
         }}
       />
       <Tab.Screen

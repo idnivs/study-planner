@@ -8,6 +8,7 @@ import { useTimerStore } from '../stores/useTimerStore';
 import { TimerWidget } from '../components/timer/TimerWidget';
 import { Card } from '../components/ui/Card';
 import { Pill } from '../components/ui/Pill';
+import { PromptModal } from '../components/ui/PromptModal';
 import { theme } from '../constants/theme';
 import { getCatStyle } from '../constants/categories';
 import { TaskWithMeta } from '../types/task';
@@ -23,6 +24,7 @@ export function TaskDetailScreen() {
   const { getTaskWithMeta, markComplete, decomposeTask, deleteCustomTask, tasks } = useTaskStore();
   const { loadStats } = useTimerStore();
   const [taskMeta, setTaskMeta] = useState<TaskWithMeta | null>(null);
+  const [decomposeModal, setDecomposeModal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -51,20 +53,16 @@ export function TaskDetailScreen() {
   };
 
   const handleDecompose = () => {
-    Alert.prompt?.('分解任务', '每行一个子任务：', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '确定',
-        onPress: async (text?: string) => {
-          if (!text) return;
-          const subs = text.split('\n').map((s: string) => s.trim()).filter(Boolean);
-          if (subs.length > 0) {
-            const ids = await decomposeTask(taskId, treeId, subs);
-            Alert.alert('成功', `已分解为 ${ids.length} 个子任务`);
-          }
-        },
-      },
-    ]);
+    setDecomposeModal(true);
+  };
+
+  const handleDecomposeConfirm = async (text: string) => {
+    const subs = text.split('\n').map((s: string) => s.trim()).filter(Boolean);
+    if (subs.length > 0) {
+      const ids = await decomposeTask(taskId, treeId, subs);
+      Alert.alert('成功', `已分解为 ${ids.length} 个子任务`);
+    }
+    setDecomposeModal(false);
   };
 
   const handleDelete = () => {
@@ -164,6 +162,15 @@ export function TaskDetailScreen() {
           })}
         </Card>
       )}
+      <PromptModal
+        visible={decomposeModal}
+        title="分解任务"
+        placeholder="每行一个子任务"
+        initialValue=""
+        multiline
+        onConfirm={handleDecomposeConfirm}
+        onCancel={() => setDecomposeModal(false)}
+      />
     </ScrollView>
   );
 }

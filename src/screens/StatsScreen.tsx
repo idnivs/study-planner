@@ -8,7 +8,6 @@ import { ProgressRing } from '../components/stats/ProgressRing';
 import { ProgressTimeline } from '../components/stats/ProgressTimeline';
 import { Card } from '../components/ui/Card';
 import { theme } from '../constants/theme';
-import { getCatStyle } from '../constants/categories';
 import { calcProgressTimeline } from '../services/progressTimeline';
 
 export function StatsScreen() {
@@ -54,24 +53,6 @@ export function StatsScreen() {
         </Card>
       </View>
 
-      <Text style={styles.sectionTitle}>分类统计</Text>
-      {taskStats && Object.entries(taskStats.by_category).map(([cat, s]) => {
-        const catStyle = getCatStyle(cat);
-        const catPct = s.total > 0 ? s.done / s.total * 100 : 0;
-        const barW = Math.round(catPct / 5);
-        const bar = '█'.repeat(barW) + '░'.repeat(20 - barW);
-        return (
-          <Card key={cat} style={{ marginBottom: 8 }}>
-            <View style={styles.catRow}>
-              <Text style={[styles.catIcon]}>{catStyle.icon}</Text>
-              <View style={styles.catInfo}>
-                <Text style={styles.catName}>{cat}</Text>
-                <Text style={styles.catBar}>{bar}  {s.done}/{s.total} ({Math.round(catPct)}%)</Text>
-              </View>
-            </View>
-          </Card>
-        );
-      })}
       <ProgressTimeline
         milestones={timeline.milestones}
         totalDays={timeline.totalDays}
@@ -134,34 +115,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.text2,
     marginTop: 4,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: theme.text,
-    marginTop: 20,
-    marginBottom: 10,
-  },
-  catRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  catIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  catInfo: {
-    flex: 1,
-  },
-  catName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.text,
-  },
-  catBar: {
-    fontSize: 11,
-    color: theme.text2,
-    marginTop: 4,
-    fontFamily: 'monospace',
   },
 });

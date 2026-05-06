@@ -135,7 +135,7 @@ export function TodayScreen() {
         {Object.keys(plan).length === 0 && (
           <View style={styles.emptyAll}>
             <Text style={styles.emptyText}>没有活跃的知识树</Text>
-            <Pressable style={styles.emptyBtn} onPress={() => nav.navigate('设置')}>
+            <Pressable style={styles.emptyBtn} onPress={() => nav.navigate('SettingsTab')}>
               <Text style={styles.emptyBtnText}>去设置</Text>
             </Pressable>
           </View>

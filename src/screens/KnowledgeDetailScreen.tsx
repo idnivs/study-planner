@@ -6,6 +6,7 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { useKnowledgeStore } from '../stores/useKnowledgeStore';
 import { ReferencesList } from '../components/knowledge/ReferencesList';
 import { Card } from '../components/ui/Card';
+import { PromptModal } from '../components/ui/PromptModal';
 import { theme } from '../constants/theme';
 
 type RouteParams = {
@@ -26,6 +27,7 @@ export function KnowledgeDetailScreen() {
   const { detail, references, loading, load, saveDetail, addReference, removeReference } =
     useKnowledgeStore();
   const [editDetail, setEditDetail] = useState('');
+  const [refModal, setRefModal] = useState(false);
 
   useEffect(() => {
     load(taskId, treeId, title, category, module, chapter);
@@ -41,19 +43,13 @@ export function KnowledgeDetailScreen() {
   };
 
   const handleAddRef = () => {
-    Alert.prompt?.('添加参考资料', '标题 *', [
-      { text: '取消', style: 'cancel' },
-      {
-        text: '下一步',
-        onPress: async (refTitle?: string) => {
-          if (!refTitle?.trim()) return;
-          // Simplified: just add with title for now
-          await addReference(refTitle.trim(), '', '');
-          // Reload
-          load(taskId, treeId, title, category, module, chapter);
-        },
-      },
-    ]);
+    setRefModal(true);
+  };
+
+  const handleRefConfirm = async (refTitle: string) => {
+    await addReference(refTitle, '', '');
+    load(taskId, treeId, title, category, module, chapter);
+    setRefModal(false);
   };
 
   return (
@@ -108,6 +104,13 @@ export function KnowledgeDetailScreen() {
         <Text style={styles.chatBtnText}>💬 AI 答疑</Text>
       </Pressable>
 
+      <PromptModal
+        visible={refModal}
+        title="添加参考资料"
+        placeholder="参考资料标题"
+        onConfirm={handleRefConfirm}
+        onCancel={() => setRefModal(false)}
+      />
       <View style={{ height: 40 }} />
     </ScrollView>
   );

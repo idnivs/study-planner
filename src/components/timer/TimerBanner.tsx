@@ -5,7 +5,12 @@ import { useForegroundTimer } from '../../hooks/useForegroundTimer';
 import { theme } from '../../constants/theme';
 import { formatDuration } from '../../utils/dateHelpers';
 
-export function TimerBanner() {
+interface TimerBannerProps {
+  onExpand?: () => void;
+  onManual?: () => void;
+}
+
+export function TimerBanner({ onExpand, onManual }: TimerBannerProps) {
   const current = useTimerStore((s) => s.current);
   const pause = useTimerStore((s) => s.pause);
   const resume = useTimerStore((s) => s.resume);
@@ -46,6 +51,12 @@ export function TimerBanner() {
       </View>
       <View style={styles.actions}>
         <Pressable
+          style={[styles.btn, styles.smallBtn]}
+          onPress={onManual}
+        >
+          <Text style={styles.smallIcon}>+</Text>
+        </Pressable>
+        <Pressable
           style={[styles.btn, current.running ? styles.pauseBtn : styles.playBtn]}
           onPress={() => current.running ? pause() : resume()}
         >
@@ -53,6 +64,9 @@ export function TimerBanner() {
         </Pressable>
         <Pressable style={[styles.btn, styles.stopBtn]} onPress={handleStop}>
           <Text style={styles.stopIcon}>⏹</Text>
+        </Pressable>
+        <Pressable style={[styles.btn, styles.expandBtn]} onPress={onExpand}>
+          <Text style={styles.expandIcon}>⛶</Text>
         </Pressable>
       </View>
     </View>
@@ -114,6 +128,27 @@ const styles = StyleSheet.create({
   },
   stopIcon: {
     color: '#fff',
+    fontSize: 14,
+  },
+  smallBtn: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  smallIcon: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  expandBtn: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
+  expandIcon: {
+    color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
   },
 });

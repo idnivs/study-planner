@@ -11,6 +11,8 @@ import { useStatsStore } from '../stores/useStatsStore';
 import { PlanCategoryCard } from '../components/plan/PlanCategoryCard';
 import { ProgressRing } from '../components/stats/ProgressRing';
 import { CountdownWidget } from '../components/timer/CountdownWidget';
+import { QuizCard } from '../components/plan/QuizCard';
+import { generateQuiz } from '../services/quizGenerator';
 import { theme } from '../constants/theme';
 import { formatDateDisplay } from '../utils/dateHelpers';
 
@@ -140,6 +142,17 @@ export function TodayScreen() {
             </Pressable>
           </View>
         )}
+        <QuizCard
+          onGenerate={async () => {
+            const t = useTaskStore.getState();
+            const done = Object.entries(t.completed)
+              .filter(([_, v]) => v)
+              .map(([id]) => t.tasks.find(tk => tk.id === id))
+              .filter(Boolean) as typeof t.tasks;
+            if (done.length < 2) return null;
+            return generateQuiz(done, t.tasks[0]?.tree_id || '11408');
+          }}
+        />
         <View style={{ height: 80 }} />
       </ScrollView>
     </View>

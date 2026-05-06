@@ -78,6 +78,93 @@ export async function generateQuiz(
   }
 }
 
+export async function generateModelAnswer(question: string): Promise<string> {
+  const apiKey = await getApiKey();
+  if (!apiKey) return '请先配置 API Key。';
+
+  const model = await getConfig('model') || 'deepseek-v4-flash';
+  const baseUrl = await getConfig('base_url') || 'https://api.deepseek.com/v1/chat/completions';
+
+  const body = JSON.stringify({
+    model,
+    thinking_mode: 'thinking',
+    temperature: 0.3,
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'system',
+        content: '你是考研辅导老师。给出题目的标准答案或参考答案，要求逻辑清晰、步骤完整。',
+      },
+      { role: 'user', content: `题目：${question}\n\n请给出标准答案。` },
+    ],
+  });
+
+  try {
+    const resp = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body,
+    });
+    const data = await resp.json();
+    return data?.choices?.[0]?.message?.content || '生成失败，请稍后重试。';
+  } catch (e: any) {
+    return `请求失败：${e.message}`;
+  }
+}
+
+export async function evaluateAnswer(
+  question: string,
+  answer: string,
+): Promise<string> {
+  const apiKey = await getApiKey();
+  if (!apiKey) return '请先配置 API Key。';
+
+  const model = await getConfig('model') || 'deepseek-v4-flash';
+  const baseUrl = await getConfig('base_url') || 'https://api.deepseek.com/v1/chat/completions';
+
+  const body = JSON.stringify({
+    model,
+    temperature: 0.7,
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'system',
+        content: `你是考研阅卷老师。给用户的答案打分并点评。
+
+要求：
+1. 给出总分 (满分10分)
+2. 简要指出对在哪里、错在哪里
+3. 给出改进建议
+4. 如果答案不完整，补充关键要点
+
+用自然语言回复，不要 JSON 格式。`,
+      },
+      {
+        role: 'user',
+        content: `题目：${question}\n\n我的答案：${answer}`,
+      },
+    ],
+  });
+
+  try {
+    const resp = await fetch(baseUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body,
+    });
+    const data = await resp.json();
+    return data?.choices?.[0]?.message?.content || '评分失败，请稍后重试。';
+  } catch (e: any) {
+    return `评分请求失败：${e.message}`;
+  }
+}
+
 function parseQuizResponse(raw: string, sourceTasks: Task[]): QuizResult {
   try {
     let json = raw;

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { AppConfig, DEFAULT_CONFIG } from '../types/config';
-import { loadConfig, saveApiKey, saveModel, saveThinkingMode, saveActiveTrees, toggleTree } from '../services/configService';
+import { loadConfig, saveApiKey, saveModel, saveThinkingMode, saveActiveTrees, saveCountdown, toggleTree } from '../services/configService';
 
 interface ConfigState extends AppConfig {
   loading: boolean;
@@ -9,6 +9,7 @@ interface ConfigState extends AppConfig {
   setModel: (model: string) => Promise<void>;
   setThinkingMode: (mode: string) => Promise<void>;
   toggleTree: (treeId: string) => Promise<void>;
+  setCountdown: (date: string, label: string) => Promise<void>;
 }
 
 export const useConfigStore = create<ConfigState>((set, get) => ({
@@ -39,5 +40,10 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
   toggleTree: async (treeId: string) => {
     const active = await toggleTree(treeId, get().active_trees);
     set({ active_trees: active });
+  },
+
+  setCountdown: async (date: string, label: string) => {
+    await saveCountdown(date, label);
+    set({ countdown_date: date, countdown_label: label });
   },
 }));

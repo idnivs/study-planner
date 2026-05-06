@@ -10,6 +10,7 @@ import { useConfigStore } from '../stores/useConfigStore';
 import { useStatsStore } from '../stores/useStatsStore';
 import { PlanCategoryCard } from '../components/plan/PlanCategoryCard';
 import { ProgressRing } from '../components/stats/ProgressRing';
+import { CountdownWidget } from '../components/timer/CountdownWidget';
 import { theme } from '../constants/theme';
 import { formatDateDisplay } from '../utils/dateHelpers';
 
@@ -18,7 +19,7 @@ export function TodayScreen() {
   const { tasks, completed, load: loadTasks, markComplete } = useTaskStore();
   const { plan, generate } = usePlanStore();
   const { categories, trees, load: loadTrees } = useTreeStore();
-  const { active_trees } = useConfigStore();
+  const { active_trees, countdown_date, countdown_label } = useConfigStore();
   const { taskStats, refresh: refreshStats } = useStatsStore();
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -72,6 +73,11 @@ export function TodayScreen() {
         </View>
         <ProgressRing pct={pct} />
       </View>
+      {countdown_date ? (
+        <View style={styles.countdownRow}>
+          <CountdownWidget targetDate={countdown_date} label={countdown_label || '倒计时'} />
+        </View>
+      ) : null}
       <ScrollView
         style={styles.scroll}
         refreshControl={
@@ -137,10 +143,14 @@ const styles = StyleSheet.create({
     color: theme.text2,
     marginTop: 4,
   },
+  countdownRow: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
+  },
   scroll: {
     flex: 1,
     paddingHorizontal: 12,
-    paddingTop: 12,
+    paddingTop: 8,
   },
   emptyAll: {
     alignItems: 'center',

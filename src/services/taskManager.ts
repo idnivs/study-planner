@@ -1,7 +1,7 @@
 import {
   getTasksByTrees, getTask, addCustomTask as addTaskToDb,
   deleteCustomTask as deleteTaskFromDb, updateTask,
-  getPrerequisites, addPrerequisite, getSubtasks, addSubtasks,
+  getPrerequisites, getPrerequisitesByTrees, addPrerequisite, getSubtasks, addSubtasks,
 } from '../db/repositories/taskRepo';
 import {
   getCompletedByTree, setCompleted, resetAllProgress,
@@ -21,6 +21,13 @@ export async function loadTasks(treeIds: string[]): Promise<{
 }> {
   const tasks = await getTasksByTrees(treeIds);
   cachedCompleted = await getCompletedByTree(treeIds);
+
+  // Load prerequisites for all loaded tasks
+  const allPrereqs = await getPrerequisitesByTrees(treeIds);
+  for (const t of tasks) {
+    t.prerequisites = allPrereqs[t.id] || [];
+  }
+
   return { tasks, completed: { ...cachedCompleted } };
 }
 

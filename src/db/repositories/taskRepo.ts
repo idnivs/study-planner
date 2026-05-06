@@ -68,6 +68,23 @@ export async function updateTask(
   );
 }
 
+export async function getPrerequisitesByTrees(
+  treeIds: string[]
+): Promise<Record<string, string[]>> {
+  if (treeIds.length === 0) return {};
+  const placeholders = treeIds.map(() => '?').join(',');
+  const rows = await getDb().getAllAsync<{ task_id: string; prereq_id: string }>(
+    `SELECT task_id, prereq_id FROM prerequisites WHERE tree_id IN (${placeholders}) ORDER BY task_id`,
+    ...treeIds
+  );
+  const result: Record<string, string[]> = {};
+  for (const row of rows) {
+    if (!result[row.task_id]) result[row.task_id] = [];
+    result[row.task_id].push(row.prereq_id);
+  }
+  return result;
+}
+
 export async function getPrerequisites(
   taskId: string, treeId: string
 ): Promise<string[]> {

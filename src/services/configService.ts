@@ -17,6 +17,8 @@ export async function loadConfig(): Promise<AppConfig> {
     base_url: raw.base_url || DEFAULT_CONFIG.base_url,
     active_trees: JSON.parse(raw.active_trees || JSON.stringify(DEFAULT_CONFIG.active_trees)),
     llm_enabled: raw.llm_enabled === 'true' || !!apiKey,
+    countdown_date: raw.countdown_date || DEFAULT_CONFIG.countdown_date,
+    countdown_label: raw.countdown_label || DEFAULT_CONFIG.countdown_label,
   };
 }
 
@@ -40,6 +42,11 @@ export async function saveThinkingMode(mode: string): Promise<void> {
 
 export async function saveActiveTrees(treeIds: string[]): Promise<void> {
   await setConfig('active_trees', JSON.stringify(treeIds));
+}
+
+export async function saveCountdown(date: string, label: string): Promise<void> {
+  await setConfig('countdown_date', date);
+  await setConfig('countdown_label', label);
 }
 
 export async function toggleTree(treeId: string, currentActive: string[]): Promise<string[]> {

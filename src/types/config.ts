@@ -9,6 +9,8 @@ export interface AppConfig {
   base_url: string;
   active_trees: string[];
   llm_enabled: boolean;
+  countdown_date: string;
+  countdown_label: string;
 }
 
 export const DEFAULT_CONFIG: Omit<AppConfig, 'api_key'> = {
@@ -19,4 +21,6 @@ export const DEFAULT_CONFIG: Omit<AppConfig, 'api_key'> = {
   base_url: 'https://api.deepseek.com/v1/chat/completions',
   active_trees: ['11408'],
   llm_enabled: false,
+  countdown_date: '',
+  countdown_label: '考研倒计时',
 };

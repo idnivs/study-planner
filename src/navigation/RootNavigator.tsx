@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TodayScreen } from '../screens/TodayScreen';
@@ -25,6 +26,14 @@ const screenOptions = {
   headerShadowVisible: false,
   contentStyle: { backgroundColor: theme.bg },
 };
+
+function TabIcon({ emoji, label, focused }: { emoji: string; label?: string; focused: boolean }) {
+  return (
+    <Text style={[styles.icon, focused && styles.iconFocused]}>
+      {emoji}
+    </Text>
+  );
+}
 
 function PlanStackScreen() {
   return (
@@ -66,59 +75,76 @@ function SettingsStackScreen() {
 export function RootNavigator() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.text3,
         tabBarStyle: {
           backgroundColor: theme.surface,
           borderTopColor: theme.border,
+          borderTopWidth: 1,
+          paddingTop: 4,
+          height: 56,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
+          marginBottom: 4,
         },
-        tabBarIcon: ({ color, size }) => {
-          const icons: Record<string, string> = {
-            PlanTab: '📋',
-            TreeTab: '🌳',
-            KnowledgeTab: '📖',
-            StatsTab: '📊',
-            SettingsTab: '⚙️',
-          };
-          return (
-            <React.Fragment>
-              {null}
-            </React.Fragment>
-          );
-        },
-      })}
+      }}
     >
       <Tab.Screen
         name="PlanTab"
         component={PlanStackScreen}
-        options={{ tabBarLabel: '今日计划' }}
+        options={{
+          tabBarLabel: '今日计划',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="TreeTab"
         component={TreeStackScreen}
-        options={{ tabBarLabel: '知识树' }}
+        options={{
+          tabBarLabel: '知识树',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🌳" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="KnowledgeTab"
         component={KnowledgeStackScreen}
-        options={{ tabBarLabel: '知识' }}
+        options={{
+          tabBarLabel: '知识',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📖" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="StatsTab"
         component={StatsScreen}
-        options={{ tabBarLabel: '统计', headerShown: true, headerTitle: '统计' }}
+        options={{
+          tabBarLabel: '统计',
+          headerShown: true,
+          headerTitle: '统计',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="SettingsTab"
         component={SettingsStackScreen}
-        options={{ tabBarLabel: '设置' }}
+        options={{
+          tabBarLabel: '设置',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+        }}
       />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  icon: {
+    fontSize: 20,
+    opacity: 0.5,
+  },
+  iconFocused: {
+    opacity: 1,
+  },
+});

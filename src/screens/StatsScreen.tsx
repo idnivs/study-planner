@@ -1,21 +1,30 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useStatsStore } from '../stores/useStatsStore';
 import { useTaskStore } from '../stores/useTaskStore';
 import { useConfigStore } from '../stores/useConfigStore';
+import { useTreeStore } from '../stores/useTreeStore';
 import { ProgressRing } from '../components/stats/ProgressRing';
+import { ProgressTimeline } from '../components/stats/ProgressTimeline';
 import { Card } from '../components/ui/Card';
 import { theme } from '../constants/theme';
 import { getCatStyle } from '../constants/categories';
+import { calcProgressTimeline } from '../services/progressTimeline';
 
 export function StatsScreen() {
   const { taskStats, timeStats, refresh } = useStatsStore();
-  const { active_trees } = useConfigStore();
+  const { active_trees, countdown_date } = useConfigStore();
   const tasks = useTaskStore((s) => s.tasks);
+  const completed = useTaskStore((s) => s.completed);
+  const categories = useTreeStore((s) => s.categories);
 
   useEffect(() => {
     refresh();
   }, [active_trees]);
+
+  const timeline = useMemo(() => {
+    return calcProgressTimeline(tasks, categories, completed, countdown_date || undefined);
+  }, [tasks, categories, completed, countdown_date]);
 
   const pct = taskStats ? (taskStats.total > 0 ? taskStats.done / taskStats.total * 100 : 0) : 0;
 
@@ -63,6 +72,11 @@ export function StatsScreen() {
           </Card>
         );
       })}
+      <ProgressTimeline
+        milestones={timeline.milestones}
+        totalDays={timeline.totalDays}
+        dailyBudget={timeline.dailyBudget}
+      />
       <View style={{ height: 60 }} />
     </ScrollView>
   );

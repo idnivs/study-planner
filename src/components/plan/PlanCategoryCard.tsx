@@ -17,11 +17,14 @@ interface PlanCategoryCardProps {
   multiTree: boolean;
   onTaskToggle: (taskId: string, treeId: string, done: boolean) => void;
   onTaskPress: (taskId: string, treeId: string) => void;
+  onTaskDecompose?: (taskId: string, treeId: string) => void;
+  onTaskDelete?: (taskId: string, treeId: string) => void;
 }
 
 export function PlanCategoryCard({
   category, budget, tasks, allTasks, completed,
   treeNames, multiTree, onTaskToggle, onTaskPress,
+  onTaskDecompose, onTaskDelete,
 }: PlanCategoryCardProps) {
   const catStyle = getCatStyle(category);
   const totalMin = tasks.reduce((s, t) => s + (t._adjusted_minutes || t.minutes), 0);
@@ -62,10 +65,14 @@ export function PlanCategoryCard({
                 priority={t.priority}
                 triggered={t._triggered}
                 completed={completed[t.id] || false}
+                decomposable={t.decomposable}
+                isCustom={t.is_custom}
                 treeName={treeNames[t.tree_id]}
                 multiTree={multiTree}
                 onToggle={() => onTaskToggle(t.id, t.tree_id, !completed[t.id])}
                 onPress={() => onTaskPress(t.id, t.tree_id)}
+                onDecompose={onTaskDecompose ? () => onTaskDecompose(t.id, t.tree_id) : undefined}
+                onDelete={onTaskDelete ? () => onTaskDelete(t.id, t.tree_id) : undefined}
               />
             </View>
           ))

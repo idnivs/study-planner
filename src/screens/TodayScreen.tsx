@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, RefreshControl, StyleSheet, Pressable,
+  View, Text, ScrollView, RefreshControl, StyleSheet, Pressable, Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTaskStore } from '../stores/useTaskStore';
@@ -16,7 +16,7 @@ import { formatDateDisplay } from '../utils/dateHelpers';
 
 export function TodayScreen() {
   const nav = useNavigation<any>();
-  const { tasks, completed, load: loadTasks, markComplete } = useTaskStore();
+  const { tasks, completed, load: loadTasks, markComplete, decomposeTask, deleteCustomTask } = useTaskStore();
   const { plan, generate } = usePlanStore();
   const { categories, trees, load: loadTrees } = useTreeStore();
   const { active_trees, countdown_date, countdown_label } = useConfigStore();
@@ -54,6 +54,33 @@ export function TodayScreen() {
     const c = useTreeStore.getState();
     generate(t.tasks, c.categories, undefined, '');
     refreshStats();
+  };
+
+  const handleTaskDecompose = async (taskId: string, treeId: string) => {
+    const ids = await decomposeTask(taskId, treeId);
+    if (ids.length > 0) {
+      await loadAll();
+      const t = useTaskStore.getState();
+      const c = useTreeStore.getState();
+      generate(t.tasks, c.categories, undefined, '');
+      refreshStats();
+    }
+  };
+
+  const handleTaskDelete = async (taskId: string, treeId: string) => {
+    Alert.alert('确认', '确定要删除这个自定义任务吗？', [
+      { text: '取消', style: 'cancel' },
+      {
+        text: '删除', style: 'destructive',
+        onPress: async () => {
+          await deleteCustomTask(taskId, treeId);
+          const t = useTaskStore.getState();
+          const c = useTreeStore.getState();
+          generate(t.tasks, c.categories, undefined, '');
+          refreshStats();
+        },
+      },
+    ]);
   };
 
   const pct = taskStats ? (taskStats.done / taskStats.total * 100) : 0;
@@ -100,6 +127,8 @@ export function TodayScreen() {
               onTaskPress={(taskId, treeId) =>
                 nav.navigate('TaskDetail', { taskId, treeId })
               }
+              onTaskDecompose={handleTaskDecompose}
+              onTaskDelete={handleTaskDelete}
             />
           );
         })}

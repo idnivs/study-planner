@@ -41,8 +41,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "11408-study-planner"
+        "projectId": "ad6df32c-0aa9-44b6-a490-863e9f06b56e"
       }
-    }
+    },
+    "owner": "idnivs"
   }
 }

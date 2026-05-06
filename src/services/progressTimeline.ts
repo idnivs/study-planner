@@ -1,70 +1,78 @@
 import { Task } from '../types/task';
-import { Category } from '../types/tree';
 
-export interface Milestone {
-  month: string;       // e.g. "6月"
-  monthKey: string;    // e.g. "2026-06"
-  targetDone: number;  // target cumulative tasks done
-  targetPct: number;   // target cumulative percentage
-  phase: string;       // phase label
+export interface CategoryTarget {
+  category: string;
+  done: number;
+  total: number;
+  pct: number;
+  expectedPct: number;
+  ahead: boolean;
+  behind: boolean;
+  targetTask: { title: string; module: string; chapter: string } | null;
 }
 
-export function calcProgressTimeline(
+export function calcMonthlyTargets(
   tasks: Task[],
-  categories: Category[],
   completed: Record<string, boolean>,
   countdownDate?: string,
-): { milestones: Milestone[]; totalDays: number; dailyBudget: number } {
+): { month: string; targets: CategoryTarget[] } | null {
   const now = new Date();
-  const remaining = tasks.filter(t => !completed[t.id]);
-  const totalRemainingMin = remaining.reduce((s, t) => s + t.minutes, 0);
-  const totalTasks = tasks.length;
-  const doneCount = totalTasks - remaining.length;
+  const month = `${now.getMonth() + 1}月`;
 
-  // Calculate total daily budget from categories
-  const dailyBudget = categories.reduce((s, c) => s + (c.daily_budget_min || 0), 0) || 120;
+  const expectedPct = calcExpectedPct(countdownDate);
 
-  // Days needed to finish
-  const totalDays = dailyBudget > 0 ? Math.ceil(totalRemainingMin / dailyBudget) : 0;
+  const byCat: Record<string, Task[]> = {};
+  for (const t of tasks) {
+    if (!byCat[t.category]) byCat[t.category] = [];
+    byCat[t.category].push(t);
+  }
 
-  // If no countdown date, use projection from now + totalDays
-  const endDate = countdownDate
-    ? new Date(countdownDate)
-    : new Date(now.getTime() + totalDays * 86400000);
+  const targets: CategoryTarget[] = [];
+  for (const [cat, catTasks] of Object.entries(byCat)) {
+    const doneCount = catTasks.filter(t => completed[t.id]).length;
+    const total = catTasks.length;
+    const pct = total > 0 ? doneCount / total : 0;
+    const ahead = pct > expectedPct + 0.05;
+    const behind = pct < expectedPct - 0.05;
 
-  const monthsDiff = monthDiff(now, endDate);
-  if (monthsDiff <= 0) return { milestones: [], totalDays, dailyBudget };
+    // Find the reference task: the one at expected progress position
+    const targetIdx = Math.min(total - 1, Math.floor(expectedPct * total));
+    const targetTask = catTasks[targetIdx] || catTasks[catTasks.length - 1] || null;
 
-  // Generate monthly milestones
-  const milestones: Milestone[] = [];
-  for (let i = 1; i <= Math.min(monthsDiff, 12); i++) {
-    const milestoneDate = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    const monthLabel = `${milestoneDate.getMonth() + 1}月`;
-    const monthKey = `${milestoneDate.getFullYear()}-${String(milestoneDate.getMonth() + 1).padStart(2, '0')}`;
+    // If there are done tasks ahead of target, find the next undone one
+    let refTask: { title: string; module: string; chapter: string } | null = null;
+    if (targetTask) {
+      refTask = {
+        title: targetTask.title,
+        module: targetTask.module,
+        chapter: targetTask.chapter,
+      };
+    }
 
-    // Linear projection: each month should complete ~1/monthsDiff of remaining
-    const progressRatio = i / monthsDiff;
-    const targetDone = Math.min(totalTasks, doneCount + Math.round(remaining.length * progressRatio));
-    const targetPct = Math.round((targetDone / totalTasks) * 100);
-
-    let phase = '';
-    if (progressRatio <= 0.35) phase = '基础阶段';
-    else if (progressRatio <= 0.65) phase = '强化阶段';
-    else if (progressRatio <= 0.85) phase = '冲刺阶段';
-    else phase = '查漏补缺';
-
-    milestones.push({
-      month: monthLabel,
-      monthKey,
-      targetDone,
-      targetPct,
-      phase,
+    targets.push({
+      category: cat,
+      done: doneCount,
+      total,
+      pct,
+      expectedPct,
+      ahead,
+      behind,
+      targetTask: refTask,
     });
   }
 
-  return { milestones, totalDays, dailyBudget };
+  return { month, targets };
 }
 
-function monthDiff(a: Date, b: Date): number {
-  return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+function calcExpectedPct(countdownDate?: string): number {
+  if (!countdownDate) return 0;
+  const target = new Date(countdownDate);
+  const now = new Date();
+  const start = new Date(target);
+  start.setMonth(start.getMonth() - 6);
+  if (start > now) return 0;
+  const totalDays = target.getTime() - start.getTime();
+  const elapsedDays = now.getTime() - start.getTime();
+  if (totalDays <= 0 || elapsedDays <= 0) return 0;
+  return Math.min(1, elapsedDays / totalDays);
 }

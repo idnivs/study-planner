@@ -2,63 +2,42 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from '../ui/Card';
 import { theme } from '../../constants/theme';
-import { Milestone } from '../../services/progressTimeline';
+import { getCatStyle } from '../../constants/categories';
+import { CategoryTarget } from '../../services/progressTimeline';
 
 interface ProgressTimelineProps {
-  milestones: Milestone[];
-  totalDays: number;
-  dailyBudget: number;
+  month: string;
+  targets: CategoryTarget[];
 }
 
-const PHASE_COLORS: Record<string, string> = {
-  '基础阶段': '#60a5fa',
-  '强化阶段': '#f59e0b',
-  '冲刺阶段': '#ef4444',
-  '查漏补缺': '#10b981',
-};
-
-export function ProgressTimeline({ milestones, totalDays, dailyBudget }: ProgressTimelineProps) {
-  if (milestones.length === 0) {
-    return (
-      <Card style={styles.card}>
-        <Text style={styles.title}>📅 推荐进度</Text>
-        <Text style={styles.empty}>
-          设置倒计日期后，将显示每月里程碑推荐。
-        </Text>
-      </Card>
-    );
-  }
-
+export function ProgressTimeline({ month, targets }: ProgressTimelineProps) {
   return (
     <Card style={styles.card}>
-      <Text style={styles.title}>📅 推荐进度</Text>
-      <Text style={styles.subtitle}>
-        每日学习 {dailyBudget} 分钟 · 预计 {totalDays} 天完成
-      </Text>
+      <Text style={styles.title}>📅 {month} 目标</Text>
 
-      {milestones.map((m, i) => {
-        const isLast = i === milestones.length - 1;
-        const color = PHASE_COLORS[m.phase] || theme.primary;
+      {targets.map((t) => {
+        const catStyle = getCatStyle(t.category);
+        const statusIcon = t.ahead ? '⚡' : t.behind ? '🐢' : '→';
+        const statusColor = t.ahead ? theme.success : t.behind ? theme.warning : theme.text3;
+        const statusText = t.ahead ? '超前' : t.behind ? '落后' : '正常';
+        const barW = Math.round(t.pct / 5);
+        const bar = '█'.repeat(barW) + '░'.repeat(20 - barW);
+
         return (
-          <View key={m.monthKey} style={styles.milestoneRow}>
-            <View style={styles.timelineCol}>
-              <View style={[styles.dot, { backgroundColor: color }]} />
-              {!isLast && <View style={styles.line} />}
-            </View>
-            <View style={styles.milestoneContent}>
-              <View style={styles.milestoneHeader}>
-                <Text style={styles.month}>{m.month}</Text>
-                <View style={[styles.phaseBadge, { backgroundColor: color + '22' }]}>
-                  <Text style={[styles.phaseText, { color }]}>{m.phase}</Text>
-                </View>
-              </View>
-              <View style={styles.progressBarBg}>
-                <View style={[styles.progressBarFill, { width: `${m.targetPct}%`, backgroundColor: color }]} />
-              </View>
-              <Text style={styles.milestoneDetail}>
-                完成 {m.targetDone} 个任务 ({m.targetPct}%)
+          <View key={t.category} style={styles.row}>
+            <View style={styles.catHeader}>
+              <Text style={styles.catIcon}>{catStyle.icon}</Text>
+              <Text style={styles.catName}>{t.category}</Text>
+              <Text style={[styles.status, { color: statusColor }]}>
+                {statusIcon} {statusText}
               </Text>
             </View>
+            <Text style={styles.bar}>{bar}  {t.done}/{t.total} ({Math.round(t.pct * 100)}%)</Text>
+            {t.targetTask ? (
+              <Text style={styles.refPoint}>
+                参考进度：{t.targetTask.module} · {t.targetTask.chapter}
+              </Text>
+            ) : null}
           </View>
         );
       })}
@@ -74,76 +53,39 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     color: theme.text,
-    marginBottom: 4,
+    marginBottom: 14,
   },
-  subtitle: {
-    fontSize: 12,
-    color: theme.text3,
-    marginBottom: 16,
+  row: {
+    marginBottom: 12,
   },
-  empty: {
-    fontSize: 13,
-    color: theme.text3,
-    marginTop: 8,
-  },
-  milestoneRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
-  timelineCol: {
-    alignItems: 'center',
-    width: 20,
-    marginRight: 12,
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 6,
-  },
-  line: {
-    width: 2,
-    flex: 1,
-    backgroundColor: theme.border,
-    marginVertical: 2,
-    minHeight: 40,
-  },
-  milestoneContent: {
-    flex: 1,
-    paddingBottom: 16,
-  },
-  milestoneHeader: {
+  catHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 6,
+    gap: 6,
+    marginBottom: 4,
   },
-  month: {
+  catIcon: {
+    fontSize: 16,
+  },
+  catName: {
     fontSize: 14,
     fontWeight: '600',
     color: theme.text,
+    flex: 1,
   },
-  phaseBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  phaseText: {
+  status: {
     fontSize: 11,
     fontWeight: '600',
   },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: theme.border,
-    borderRadius: 3,
-    marginBottom: 4,
-  },
-  progressBarFill: {
-    height: 6,
-    borderRadius: 3,
-  },
-  milestoneDetail: {
+  bar: {
     fontSize: 11,
     color: theme.text2,
+    fontFamily: 'monospace',
+    marginBottom: 2,
+  },
+  refPoint: {
+    fontSize: 11,
+    color: theme.primary,
+    fontWeight: '500',
   },
 });

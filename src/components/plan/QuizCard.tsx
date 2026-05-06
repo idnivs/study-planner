@@ -12,10 +12,11 @@ interface QuizResult {
 }
 
 interface QuizCardProps {
-  onGenerate: () => Promise<QuizResult | null>;
+  categories: string[];
+  onGenerate: (category: string) => Promise<QuizResult | null>;
 }
 
-export function QuizCard({ onGenerate }: QuizCardProps) {
+export function QuizCard({ categories, onGenerate }: QuizCardProps) {
   const [quiz, setQuiz] = useState<QuizResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -23,6 +24,7 @@ export function QuizCard({ onGenerate }: QuizCardProps) {
   const [score, setScore] = useState('');
   const [scoring, setScoring] = useState(false);
   const [modelAnswer, setModelAnswer] = useState('');
+  const [selectedCat, setSelectedCat] = useState(categories[0] || '');
   const [loadingAnswer, setLoadingAnswer] = useState(false);
 
   const handleGenerate = async () => {
@@ -31,7 +33,7 @@ export function QuizCard({ onGenerate }: QuizCardProps) {
     setAnswer('');
     setScore('');
     setModelAnswer('');
-    const result = await onGenerate();
+    const result = await onGenerate(selectedCat);
     if (result) setQuiz(result);
     setLoading(false);
   };
@@ -59,6 +61,21 @@ export function QuizCard({ onGenerate }: QuizCardProps) {
       <Card style={styles.card}>
         <Text style={styles.title}>🎯 复习检测</Text>
         <Text style={styles.desc}>从已完成的任务中随机选题，AI 为你生成一道综合测验题</Text>
+        {categories.length > 1 && (
+          <View style={styles.catRow}>
+            {categories.map((cat) => (
+              <Pressable
+                key={cat}
+                style={[styles.catChip, selectedCat === cat && styles.catChipActive]}
+                onPress={() => setSelectedCat(cat)}
+              >
+                <Text style={[styles.catChipText, selectedCat === cat && styles.catChipTextActive]}>
+                  {cat}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
         <Pressable
           style={[styles.genBtn, loading && styles.genBtnDisabled]}
           onPress={handleGenerate}
@@ -187,6 +204,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.text3,
     marginBottom: 12,
+  },
+  catRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 12,
+  },
+  catChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+  },
+  catChipActive: {
+    backgroundColor: theme.primaryLight,
+  },
+  catChipText: {
+    fontSize: 11,
+    color: theme.text2,
+  },
+  catChipTextActive: {
+    color: theme.primary,
+    fontWeight: '600',
   },
   genBtn: {
     backgroundColor: theme.primary,

@@ -26,6 +26,7 @@ export function KnowledgeScreen() {
   const { active_trees, countdown_date } = useConfigStore();
   const { categories, load: loadTrees } = useTreeStore();
   const [search, setSearch] = useState('');
+  const [catFilter, setCatFilter] = useState('');
   const [mode, setMode] = useState<ViewMode>('list');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -56,6 +57,7 @@ export function KnowledgeScreen() {
   const treeSections = useMemo(() => {
     const byCat: Record<string, Task[]> = {};
     for (const t of tasks) {
+      if (catFilter && t.category !== catFilter) continue;
       if (search) {
         const q = search.toLowerCase();
         const text = `${t.title} ${t.module} ${t.chapter} ${t.id}`.toLowerCase();
@@ -69,7 +71,7 @@ export function KnowledgeScreen() {
       const totalCount = catTasks.length;
       return { category: cat, doneCount, totalCount, tasks: catTasks };
     });
-  }, [tasks, completed, search]);
+  }, [tasks, completed, search, catFilter]);
 
   const toggleExpand = (key: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -137,7 +139,7 @@ export function KnowledgeScreen() {
               category={item.category}
               pace={item.pace}
               onPress={() => {
-                setSearch(item.category);
+                setCatFilter(item.category);
                 setMode('tree');
               }}
             />
@@ -147,6 +149,15 @@ export function KnowledgeScreen() {
 
       {/* Tree mode */}
       {mode === 'tree' && (
+        <>
+        {catFilter ? (
+          <View style={styles.filterBanner}>
+            <Text style={styles.filterText}>筛选：{catFilter}</Text>
+            <Pressable onPress={() => setCatFilter('')}>
+              <Text style={styles.filterClear}>✕</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <SectionList
           sections={treeSections.map(s => ({
             title: s.category,
@@ -218,6 +229,7 @@ export function KnowledgeScreen() {
             );
           }}
         />
+      </>
       )}
     </View>
   );
@@ -258,6 +270,25 @@ const styles = StyleSheet.create({
   toggleTextActive: {
     color: theme.text,
     fontWeight: '600',
+  },
+  filterBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.primaryLight,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    justifyContent: 'space-between',
+  },
+  filterText: {
+    fontSize: 12,
+    color: theme.primary,
+    fontWeight: '600',
+  },
+  filterClear: {
+    fontSize: 14,
+    color: theme.primary,
+    fontWeight: 'bold',
+    padding: 4,
   },
   listContent: {
     padding: 12,

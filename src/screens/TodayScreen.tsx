@@ -143,14 +143,16 @@ export function TodayScreen() {
           </View>
         )}
         <QuizCard
-          onGenerate={async () => {
+          categories={categories.map(c => c.name)}
+          onGenerate={async (category) => {
             const t = useTaskStore.getState();
             const done = Object.entries(t.completed)
               .filter(([_, v]) => v)
               .map(([id]) => t.tasks.find(tk => tk.id === id))
               .filter(Boolean) as typeof t.tasks;
-            if (done.length < 2) return null;
-            return generateQuiz(done, t.tasks[0]?.tree_id || '11408');
+            const filtered = done.filter(tk => !category || tk.category === category);
+            if (filtered.length < 2) return null;
+            return generateQuiz(filtered, t.tasks[0]?.tree_id || '11408');
           }}
         />
         <View style={{ height: 80 }} />

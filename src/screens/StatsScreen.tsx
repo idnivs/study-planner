@@ -8,7 +8,7 @@ import { ProgressRing } from '../components/stats/ProgressRing';
 import { ProgressTimeline } from '../components/stats/ProgressTimeline';
 import { Card } from '../components/ui/Card';
 import { theme } from '../constants/theme';
-import { calcProgressTimeline } from '../services/progressTimeline';
+import { calcMonthlyTargets } from '../services/progressTimeline';
 
 export function StatsScreen() {
   const { taskStats, timeStats, refresh } = useStatsStore();
@@ -21,9 +21,9 @@ export function StatsScreen() {
     refresh();
   }, [active_trees]);
 
-  const timeline = useMemo(() => {
-    return calcProgressTimeline(tasks, categories, completed, countdown_date || undefined);
-  }, [tasks, categories, completed, countdown_date]);
+  const monthly = useMemo(() => {
+    return calcMonthlyTargets(tasks, completed, countdown_date || undefined);
+  }, [tasks, completed, countdown_date]);
 
   const pct = taskStats ? (taskStats.total > 0 ? taskStats.done / taskStats.total * 100 : 0) : 0;
 
@@ -53,11 +53,12 @@ export function StatsScreen() {
         </Card>
       </View>
 
-      <ProgressTimeline
-        milestones={timeline.milestones}
-        totalDays={timeline.totalDays}
-        dailyBudget={timeline.dailyBudget}
-      />
+      {monthly && (
+        <ProgressTimeline
+          month={monthly.month}
+          targets={monthly.targets}
+        />
+      )}
       <View style={{ height: 60 }} />
     </ScrollView>
   );

@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "name": "运动与减重",
+    "description": "间歇运动、力量训练、饮食控制、体态改善",
+    "version": "1.0"
+  },
+  "categories": {
+    "运动": {
+      "daily_budget_min": 60,
+      "icon": "🏃",
+      "color": "#FDF2F8"
+    }
+  },
+  "tasks": [
+    {
+      "id": "F-C-01",
+      "category": "运动",
+      "module": "间歇运动",
+      "chapter": "有氧",
+      "title": "间歇快走40分钟（快走3分钟+冲刺1分钟）×8-10组",
+      "minutes": 45,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-C-02",
+      "category": "运动",
+      "module": "间歇运动",
+      "chapter": "有氧",
+      "title": "慢跑+快走交替30分钟",
+      "minutes": 35,
+      "priority": 4,
+      "prerequisites": []
+    },
+    {
+      "id": "F-C-03",
+      "category": "运动",
+      "module": "间歇运动",
+      "chapter": "有氧",
+      "title": "游泳40分钟（替代性有氧，打破平台期）",
+      "minutes": 50,
+      "priority": 3,
+      "prerequisites": []
+    },
+    {
+      "id": "F-C-04",
+      "category": "运动",
+      "module": "间歇运动",
+      "chapter": "有氧",
+      "title": "跳绳间歇训练（跳1分钟+休30秒）×15组",
+      "minutes": 30,
+      "priority": 3,
+      "prerequisites": []
+    },
+    {
+      "id": "F-S-01",
+      "category": "运动",
+      "module": "力量训练",
+      "chapter": "下肢",
+      "title": "靠墙静蹲（3-4组力竭）",
+      "minutes": 15,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-S-02",
+      "category": "运动",
+      "module": "力量训练",
+      "chapter": "上肢",
+      "title": "跪姿俯卧撑（3-4组力竭）",
+      "minutes": 15,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-S-03",
+      "category": "运动",
+      "module": "力量训练",
+      "chapter": "核心",
+      "title": "平板支撑+侧支撑（各3组力竭）",
+      "minutes": 15,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-S-04",
+      "category": "运动",
+      "module": "力量训练",
+      "chapter": "全身",
+      "title": "深蹲+俯卧撑+平板支撑循环训练（3轮）",
+      "minutes": 25,
+      "priority": 4,
+      "prerequisites": [
+        "F-S-01",
+        "F-S-02",
+        "F-S-03"
+      ]
+    },
+    {
+      "id": "F-D-01",
+      "category": "运动",
+      "module": "饮食控制",
+      "chapter": "饮食",
+      "title": "早晨空腹称重记录+500ml温水",
+      "minutes": 5,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-D-02",
+      "category": "运动",
+      "module": "饮食控制",
+      "chapter": "饮食",
+      "title": "三餐蛋白质≥150g追踪（鸡胸肉/鱼虾/蛋奶）",
+      "minutes": 5,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-D-03",
+      "category": "运动",
+      "module": "饮食控制",
+      "chapter": "饮食",
+      "title": "粗粮替换精粮+蔬菜2拳头/餐",
+      "minutes": 5,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-D-04",
+      "category": "运动",
+      "module": "饮食控制",
+      "chapter": "饮食",
+      "title": "零含糖饮料零零食自检",
+      "minutes": 5,
+      "priority": 5,
+      "prerequisites": []
+    },
+    {
+      "id": "F-P-01",
+      "category": "运动",
+      "module": "体态改善",
+      "chapter": "体态",
+      "title": "靠墙站立5分钟（后脑勺、肩胛、臀、脚跟贴墙）",
+      "minutes": 10,
+      "priority": 4,
+      "prerequisites": []
+    },
+    {
+      "id": "F-P-02",
+      "category": "运动",
+      "module": "体态改善",
+      "chapter": "体态",
+      "title": "肩颈拉伸+扩胸运动（每组10次×3组）",
+      "minutes": 10,
+      "priority": 4,
+      "prerequisites": []
+    }
+  ]
+}

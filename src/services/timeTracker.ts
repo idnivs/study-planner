@@ -1,4 +1,32 @@
 import { getTimeRecords, addTimeRecord } from '../db/repositories/progressRepo';
+import { setConfig, getConfig } from '../db/repositories/configRepo';
+
+export interface PersistedTimer {
+  taskId: string;
+  taskTitle: string;
+  estimatedMin: number;
+  startTime: number; // Date.now() when started
+}
+
+const TIMER_KEY = '_timer_state';
+
+export async function saveTimerState(state: PersistedTimer): Promise<void> {
+  await setConfig(TIMER_KEY, JSON.stringify(state));
+}
+
+export async function loadTimerState(): Promise<PersistedTimer | null> {
+  const raw = await getConfig(TIMER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as PersistedTimer;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearTimerState(): Promise<void> {
+  await setConfig(TIMER_KEY, '');
+}
 
 export function getAdjustedEstimate(
   records: { estimated_min: number; actual_min: number }[],

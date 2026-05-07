@@ -143,7 +143,7 @@ export function TodayScreen() {
           </View>
         )}
         <QuizCard
-          categories={categories.map(c => c.name)}
+          categories={categories.map(c => c.name).filter(c => c !== '复盘')}
           onGenerate={async (category) => {
             const t = useTaskStore.getState();
             const done = Object.entries(t.completed)
@@ -171,14 +171,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 14,
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: theme.border,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: theme.text,
   },

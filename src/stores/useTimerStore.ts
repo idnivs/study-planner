@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { TimerState } from '../types/progress';
-import { recordTime, getTaskStats } from '../services/timeTracker';
+import { recordTime, getTaskStats, saveTimerState, clearTimerState } from '../services/timeTracker';
 
 interface TimerStore {
   current: TimerState | null;
@@ -12,6 +12,7 @@ interface TimerStore {
   tick: (elapsed: number) => void;
   recordManual: (taskId: string, treeId: string, estimatedMin: number, minutes: number) => Promise<void>;
   loadStats: (taskId: string, treeId: string) => Promise<void>;
+  restore: (state: TimerState) => void;
   clear: () => void;
 }
 
@@ -20,13 +21,15 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   taskStats: null,
 
   start: (taskId, taskTitle, estimatedMin) => {
+    const now = Date.now();
+    saveTimerState({ taskId, taskTitle, estimatedMin, startTime: now });
     set({
       current: {
         taskId,
         taskTitle,
         estimatedMin,
         running: true,
-        startTime: Date.now(),
+        startTime: now,
         elapsed: 0,
       },
     });
@@ -35,7 +38,12 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
   stop: async (treeId) => {
     const cur = get().current;
     if (!cur) return;
-    await recordTime(cur.taskId, treeId, cur.estimatedMin, cur.elapsed);
+    // Calculate final elapsed from stored startTime
+    const elapsed = cur.running
+      ? Math.floor((Date.now() - cur.startTime) / 1000)
+      : cur.elapsed;
+    await recordTime(cur.taskId, treeId, cur.estimatedMin, elapsed);
+    await clearTimerState();
     set({ current: null });
   },
 
@@ -78,5 +86,18 @@ export const useTimerStore = create<TimerStore>((set, get) => ({
     set({ taskStats: stats });
   },
 
-  clear: () => set({ current: null, taskStats: null }),
+  restore: (state) => {
+    saveTimerState({
+      taskId: state.taskId,
+      taskTitle: state.taskTitle,
+      estimatedMin: state.estimatedMin,
+      startTime: state.startTime,
+    });
+    set({ current: state });
+  },
+
+  clear: () => {
+    clearTimerState();
+    set({ current: null, taskStats: null });
+  },
 }));

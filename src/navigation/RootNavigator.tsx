@@ -7,6 +7,7 @@ import { KnowledgeScreen } from '../screens/KnowledgeScreen';
 import { TaskDetailScreen } from '../screens/TaskDetailScreen';
 import { KnowledgeDetailScreen } from '../screens/KnowledgeDetailScreen';
 import { KnowledgeChatScreen } from '../screens/KnowledgeChatScreen';
+import { TaskManagerChatScreen } from '../screens/TaskManagerChatScreen';
 import { StatsScreen } from '../screens/StatsScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ApiSettingsScreen } from '../screens/ApiSettingsScreen';
@@ -18,10 +19,11 @@ const KnowledgeStack = createNativeStackNavigator();
 const SettingsStack = createNativeStackNavigator();
 
 const screenOptions = {
-  headerStyle: { backgroundColor: theme.surface },
+  headerStyle: { backgroundColor: theme.surface, height: 44 },
   headerTintColor: theme.text,
-  headerTitleStyle: { fontWeight: '600' as const, fontSize: 16 },
+  headerTitleStyle: { fontWeight: '600' as const, fontSize: 15 },
   headerShadowVisible: false,
+  headerTitleAlign: 'center' as const,
   contentStyle: { backgroundColor: theme.bg },
 };
 
@@ -49,6 +51,7 @@ function KnowledgeStackScreen() {
       <KnowledgeStack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: '任务详情' }} />
       <KnowledgeStack.Screen name="KnowledgeDetail" component={KnowledgeDetailScreen} options={{ title: '知识详情' }} />
       <KnowledgeStack.Screen name="KnowledgeChat" component={KnowledgeChatScreen} options={{ title: 'AI 答疑' }} />
+      <KnowledgeStack.Screen name="TaskManagerChat" component={TaskManagerChatScreen} options={{ title: 'AI 任务管理' }} />
     </KnowledgeStack.Navigator>
   );
 }
@@ -73,13 +76,12 @@ export function RootNavigator() {
           backgroundColor: theme.surface,
           borderTopColor: theme.border,
           borderTopWidth: 1,
-          paddingTop: 4,
-          height: 56,
+          height: 48,
         },
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',
-          marginBottom: 4,
+          marginBottom: 2,
         },
       }}
     >

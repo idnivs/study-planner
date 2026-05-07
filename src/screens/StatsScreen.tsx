@@ -6,12 +6,13 @@ import { useConfigStore } from '../stores/useConfigStore';
 import { useTreeStore } from '../stores/useTreeStore';
 import { ProgressRing } from '../components/stats/ProgressRing';
 import { ProgressTimeline } from '../components/stats/ProgressTimeline';
+import { CalendarHeatmap } from '../components/stats/CalendarHeatmap';
 import { Card } from '../components/ui/Card';
 import { theme } from '../constants/theme';
 import { calcMonthlyTargets } from '../services/progressTimeline';
 
 export function StatsScreen() {
-  const { taskStats, timeStats, refresh } = useStatsStore();
+  const { taskStats, timeStats, dailyStats, refresh } = useStatsStore();
   const { active_trees, countdown_date } = useConfigStore();
   const tasks = useTaskStore((s) => s.tasks);
   const completed = useTaskStore((s) => s.completed);
@@ -52,6 +53,8 @@ export function StatsScreen() {
           <Text style={styles.statLabel}>累计学习小时</Text>
         </Card>
       </View>
+
+      <CalendarHeatmap dailyStats={dailyStats} />
 
       {monthly && (
         <ProgressTimeline

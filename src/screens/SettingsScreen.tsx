@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Modal, TextInput, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, Switch, Modal, TextInput, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useConfigStore } from '../stores/useConfigStore';
 import { useTreeStore } from '../stores/useTreeStore';
@@ -8,15 +8,20 @@ import { TreeSelector } from '../components/tree/TreeSelector';
 import { Card } from '../components/ui/Card';
 import { theme } from '../constants/theme';
 import { resetAllProgress } from '../db/repositories/progressRepo';
+import { requestPermissions, scheduleDailyReminder, cancelReminder } from '../services/notificationService';
 
 export function SettingsScreen() {
   const nav = useNavigation<any>();
-  const { active_trees, toggleTree, countdown_date, countdown_label, setCountdown, load: loadConfig } = useConfigStore();
+  const { active_trees, toggleTree, countdown_date, countdown_label, setCountdown, load: loadConfig,
+    notify_enabled, notify_time, setNotification } = useConfigStore();
   const { trees, load: loadTrees } = useTreeStore();
   const { load: loadTasks } = useTaskStore();
   const [cdModal, setCdModal] = useState(false);
   const [cdDate, setCdDate] = useState('');
   const [cdLabel, setCdLabel] = useState('');
+  const [notifyModal, setNotifyModal] = useState(false);
+  const [notifyHour, setNotifyHour] = useState('20');
+  const [notifyMin, setNotifyMin] = useState('00');
 
   useEffect(() => {
     (async () => {
@@ -61,6 +66,36 @@ export function SettingsScreen() {
     setCdModal(false);
   };
 
+  const handleNotifyToggle = async (enabled: boolean) => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      Alert.alert('提示', '需要通知权限才能开启每日提醒');
+      return;
+    }
+    if (enabled) {
+      await scheduleDailyReminder(notify_time);
+    } else {
+      await cancelReminder();
+    }
+    await setNotification(enabled, notify_time);
+  };
+
+  const openNotifyModal = () => {
+    const [h, m] = (notify_time || '20:00').split(':');
+    setNotifyHour(h);
+    setNotifyMin(m);
+    setNotifyModal(true);
+  };
+
+  const saveNotify = async () => {
+    const h = notifyHour.padStart(2, '0');
+    const m = notifyMin.padStart(2, '0');
+    const time = `${h}:${m}`;
+    await scheduleDailyReminder(time);
+    await setNotification(true, time);
+    setNotifyModal(false);
+  };
+
   const cdDisplay = countdown_date
     ? `${countdown_label || '倒计时'}: ${countdown_date}`
     : '设置倒计日期';
@@ -76,6 +111,26 @@ export function SettingsScreen() {
         <Text style={styles.rowText}>⏰ {cdDisplay}</Text>
         <Text style={styles.rowArrow}>›</Text>
       </Pressable>
+
+      <View style={styles.row}>
+        <View style={styles.rowLeft}>
+          <Text style={styles.rowText}>🔔 每日学习提醒</Text>
+          <Text style={styles.rowHint}>{notify_enabled ? `每天 ${notify_time}` : '未开启'}</Text>
+        </View>
+        <View style={styles.rowRight}>
+          {notify_enabled ? (
+            <Pressable onPress={openNotifyModal}>
+              <Text style={styles.editBtn}>编辑</Text>
+            </Pressable>
+          ) : null}
+          <Switch
+            value={notify_enabled}
+            onValueChange={handleNotifyToggle}
+            trackColor={{ false: '#d1d5db', true: theme.primaryLight }}
+            thumbColor={notify_enabled ? theme.primary : '#f4f3f4'}
+          />
+        </View>
+      </View>
 
       <Pressable
         style={styles.row}
@@ -94,6 +149,43 @@ export function SettingsScreen() {
         <Text style={styles.about}>11408 学习计划 v4.0</Text>
         <Text style={styles.aboutSub}>React Native 纯本地版</Text>
       </Card>
+
+      <Modal visible={notifyModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>设置每日提醒时间</Text>
+            <View style={styles.timePickerRow}>
+              <TextInput
+                style={styles.timeInput}
+                value={notifyHour}
+                onChangeText={(t) => setNotifyHour(t.replace(/[^0-9]/g, '').slice(0, 2))}
+                keyboardType="number-pad"
+                maxLength={2}
+                placeholder="20"
+                placeholderTextColor={theme.text3}
+              />
+              <Text style={styles.timeSep}>:</Text>
+              <TextInput
+                style={styles.timeInput}
+                value={notifyMin}
+                onChangeText={(t) => setNotifyMin(t.replace(/[^0-9]/g, '').slice(0, 2))}
+                keyboardType="number-pad"
+                maxLength={2}
+                placeholder="00"
+                placeholderTextColor={theme.text3}
+              />
+            </View>
+            <View style={styles.modalBtns}>
+              <Pressable style={styles.modalBtn} onPress={() => setNotifyModal(false)}>
+                <Text style={styles.modalBtnText}>取消</Text>
+              </Pressable>
+              <Pressable style={[styles.modalBtn, styles.modalBtnPrimary]} onPress={saveNotify}>
+                <Text style={[styles.modalBtnText, { color: '#fff' }]}>保存</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={cdModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
@@ -167,6 +259,48 @@ const styles = StyleSheet.create({
   rowArrow: {
     fontSize: 18,
     color: theme.text3,
+  },
+  rowLeft: {
+    flex: 1,
+  },
+  rowHint: {
+    fontSize: 11,
+    color: theme.text3,
+    marginTop: 2,
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  editBtn: {
+    fontSize: 13,
+    color: theme.primary,
+    fontWeight: '600',
+  },
+  timePickerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
+  timeInput: {
+    backgroundColor: theme.bg,
+    borderRadius: theme.radiusSm,
+    borderWidth: 1,
+    borderColor: theme.border,
+    padding: 12,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.text,
+    width: 72,
+    textAlign: 'center',
+  },
+  timeSep: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.text,
   },
   about: {
     fontSize: 13,

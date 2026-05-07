@@ -79,3 +79,19 @@ export async function getTotalTimeStats(): Promise<{ sessions: number; hours: nu
     hours: (row?.total_min || 0) / 60,
   };
 }
+
+export async function getDailyStats(days: number = 180): Promise<Record<string, number>> {
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  const rows = await getDb().getAllAsync<{ record_date: string; total_min: number }>(
+    `SELECT record_date, SUM(actual_min) as total_min FROM time_records
+     WHERE record_date >= ?
+     GROUP BY record_date ORDER BY record_date`,
+    since.toISOString().slice(0, 10)
+  );
+  const result: Record<string, number> = {};
+  for (const row of rows) {
+    result[row.record_date] = Math.round(row.total_min);
+  }
+  return result;
+}

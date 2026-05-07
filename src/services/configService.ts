@@ -19,6 +19,8 @@ export async function loadConfig(): Promise<AppConfig> {
     llm_enabled: raw.llm_enabled === 'true' || !!apiKey,
     countdown_date: raw.countdown_date || DEFAULT_CONFIG.countdown_date,
     countdown_label: raw.countdown_label || DEFAULT_CONFIG.countdown_label,
+    notify_enabled: raw.notify_enabled === 'true',
+    notify_time: raw.notify_time || DEFAULT_CONFIG.notify_time,
   };
 }
 
@@ -47,6 +49,11 @@ export async function saveActiveTrees(treeIds: string[]): Promise<void> {
 export async function saveCountdown(date: string, label: string): Promise<void> {
   await setConfig('countdown_date', date);
   await setConfig('countdown_label', label);
+}
+
+export async function saveNotificationConfig(enabled: boolean, time: string): Promise<void> {
+  await setConfig('notify_enabled', enabled ? 'true' : 'false');
+  await setConfig('notify_time', time);
 }
 
 export async function toggleTree(treeId: string, currentActive: string[]): Promise<string[]> {

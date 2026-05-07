@@ -53,47 +53,58 @@ export function KnowledgeDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Card>
-        <View style={styles.header}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.breadcrumb}>{category} · {module} · {chapter}</Text>
-        </View>
-      </Card>
+    <View style={styles.container}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        <Card>
+          <View style={styles.header}>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.breadcrumb}>{category} · {module} · {chapter}</Text>
+          </View>
+        </Card>
 
-      <Card style={{ marginTop: 12 }}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>📝 知识详情</Text>
-          <Pressable style={styles.saveBtn} onPress={handleSave}>
-            <Text style={styles.saveText}>保存</Text>
-          </Pressable>
-        </View>
-        <TextInput
-          style={styles.editor}
-          value={editDetail}
-          onChangeText={setEditDetail}
-          multiline
-          textAlignVertical="top"
-          placeholder="在此编辑知识详情 (支持 Markdown)..."
-          placeholderTextColor={theme.text3}
-        />
-      </Card>
+        <Card style={{ marginTop: 12 }}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>📝 知识详情</Text>
+            <Pressable style={styles.saveBtn} onPress={handleSave}>
+              <Text style={styles.saveText}>保存</Text>
+            </Pressable>
+          </View>
+          <TextInput
+            style={styles.editor}
+            value={editDetail}
+            onChangeText={setEditDetail}
+            multiline
+            textAlignVertical="top"
+            placeholder="在此编辑知识详情 (支持 Markdown)..."
+            placeholderTextColor={theme.text3}
+          />
+        </Card>
 
-      <Card style={{ marginTop: 12 }}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>📚 参考资料</Text>
-          <Pressable style={styles.addBtn} onPress={handleAddRef}>
-            <Text style={styles.addText}>+ 添加</Text>
-          </Pressable>
-        </View>
-        <ReferencesList
-          references={references}
-          onRemove={async (refId) => {
-            await removeReference(refId);
-            load(taskId, treeId, title, category, module, chapter);
-          }}
+        <Card style={{ marginTop: 12 }}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>📚 参考资料</Text>
+            <Pressable style={styles.addBtn} onPress={handleAddRef}>
+              <Text style={styles.addText}>+ 添加</Text>
+            </Pressable>
+          </View>
+          <ReferencesList
+            references={references}
+            onRemove={async (refId) => {
+              await removeReference(refId);
+              load(taskId, treeId, title, category, module, chapter);
+            }}
+          />
+        </Card>
+
+        <PromptModal
+          visible={refModal}
+          title="添加参考资料"
+          placeholder="参考资料标题"
+          onConfirm={handleRefConfirm}
+          onCancel={() => setRefModal(false)}
         />
-      </Card>
+        <View style={{ height: 16 }} />
+      </ScrollView>
 
       <Pressable
         style={styles.chatBtn}
@@ -103,16 +114,7 @@ export function KnowledgeDetailScreen() {
       >
         <Text style={styles.chatBtnText}>💬 AI 答疑</Text>
       </Pressable>
-
-      <PromptModal
-        visible={refModal}
-        title="添加参考资料"
-        placeholder="参考资料标题"
-        onConfirm={handleRefConfirm}
-        onCancel={() => setRefModal(false)}
-      />
-      <View style={{ height: 40 }} />
-    </ScrollView>
+    </View>
   );
 }
 
@@ -120,6 +122,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.bg,
+  },
+  scroll: {
+    flex: 1,
   },
   content: {
     padding: 12,
@@ -181,9 +186,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   chatBtn: {
-    marginTop: 16,
     backgroundColor: theme.primary,
-    borderRadius: theme.radius,
     paddingVertical: 14,
     alignItems: 'center',
   },

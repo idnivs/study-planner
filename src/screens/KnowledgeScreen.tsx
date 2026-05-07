@@ -111,6 +111,12 @@ export function KnowledgeScreen() {
       {/* Search + Toggle */}
       <View style={styles.topBar}>
         <SearchBar value={search} onChangeText={setSearch} placeholder="搜索任务..." />
+        <Pressable
+          style={styles.aiBtn}
+          onPress={() => nav.navigate('TaskManagerChat')}
+        >
+          <Text style={styles.aiBtnText}>🤖</Text>
+        </Pressable>
         <View style={styles.toggle}>
           <Pressable
             style={[styles.toggleBtn, mode === 'list' && styles.toggleActive]}
@@ -246,7 +252,18 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
+  },
+  aiBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiBtnText: {
+    fontSize: 16,
   },
   toggle: {
     flexDirection: 'row',

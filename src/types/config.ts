@@ -11,6 +11,8 @@ export interface AppConfig {
   llm_enabled: boolean;
   countdown_date: string;
   countdown_label: string;
+  notify_enabled: boolean;
+  notify_time: string; // "HH:MM"
 }
 
 export const DEFAULT_CONFIG: Omit<AppConfig, 'api_key'> = {
@@ -23,4 +25,6 @@ export const DEFAULT_CONFIG: Omit<AppConfig, 'api_key'> = {
   llm_enabled: false,
   countdown_date: '',
   countdown_label: '考研倒计时',
+  notify_enabled: false,
+  notify_time: '20:00',
 };
